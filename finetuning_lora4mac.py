@@ -21,7 +21,7 @@ from shutil import copy
 from peft import LoraConfig, get_peft_model, get_peft_model_state_dict, prepare_model_for_int8_training, \
     set_peft_model_state_dict
 
-# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # model = Model(input_size, output_size)
 # if torch.cuda.device_count() > 1:
 #     print("Let's use", torch.cuda.device_count(), "GPUs!")
@@ -29,7 +29,7 @@ from peft import LoraConfig, get_peft_model, get_peft_model_state_dict, prepare_
 # model.to(device)
 
 # os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-os.environ['CUDA_VISIBLE_DEVICES'] = 'all'
+# os.environ['CUDA_VISIBLE_DEVICES'] = 'all'
 
 
 def print_trainable_parameters(model):
@@ -82,8 +82,8 @@ def main():
                         )
 
     model = get_peft_model(model, config)
-    model = model.half().cuda()
-    # model = model.half().to(device)
+    # model = model.half().cuda()
+    model = model.half().to(device)
     
 
     conf = {"train_micro_batch_size_per_gpu": args.train_batch_size,
@@ -140,10 +140,10 @@ def main():
     for i_epoch in range(args.num_train_epochs):
         train_iter = iter(train_dataloader)
         for step, batch in enumerate(train_iter):
-            input_ids = batch["input_ids"].cuda()
-            # input_ids = batch["input_ids"].to(device)
-            labels = batch["labels"].cuda()
-            # labels = batch["labels"].to(device)
+            # input_ids = batch["input_ids"].cuda()
+            input_ids = batch["input_ids"].to(device)
+            # labels = batch["labels"].cuda()
+            labels = batch["labels"].to(device)
             outputs = model_engine.forward(input_ids=input_ids, labels=labels)
             loss = outputs[0]
             if conf["gradient_accumulation_steps"] > 1:
