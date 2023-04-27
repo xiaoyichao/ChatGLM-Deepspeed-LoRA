@@ -34,8 +34,8 @@ class SFTDataSet(Dataset):
                     truncation=True,
                     add_special_tokens=False)
                 input_ids = prompt_ids + target_ids + [config.eos_token_id]
-                format_data = {"input_ids": input_ids, "seq_len": len(prompt_ids)}
-                self.all_data.append(format_data)
+                feature = {"input_ids": input_ids[:max_seq_length], "seq_len": len(prompt_ids)}
+                self.all_data.append(feature)
                             
 
     def __len__(self):
