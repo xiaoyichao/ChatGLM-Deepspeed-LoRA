@@ -1,10 +1,10 @@
 # -*- coding:utf-8 -*-
 # @project: ChatGLM-Finetuning
-# @filename: finetuning_freeze
+# @filename: finetuning_lora
 # @author: 刘聪NLP
 # @zhihu: https://www.zhihu.com/people/LiuCongNLP
 # @contact: logcongcong@gmail.com
-# @time: 2023/4/4 17:55
+# @time: 2023/4/4 16:34
 """
     文件说明：
             
@@ -18,6 +18,9 @@ from torch.utils.data import RandomSampler, DataLoader
 from data_set import Seq2SeqDataSet, coll_fn
 import os
 from shutil import copy
+from peft import LoraConfig, get_peft_model, get_peft_model_state_dict, prepare_model_for_int8_training, \
+    set_peft_model_state_dict
+
 
 
 def print_trainable_parameters(model):
@@ -42,11 +45,12 @@ def set_args():
     parser.add_argument('--num_train_epochs', default=5, type=int, help='')
     parser.add_argument('--train_batch_size', default=2, type=int, help='')
     parser.add_argument('--gradient_accumulation_steps', default=1, type=int, help='')
-    parser.add_argument('--output_dir', default='output_dir_freeze/', type=str, help='')
+    parser.add_argument('--output_dir', default='output_dir_lora/', type=str, help='')
     parser.add_argument('--log_steps', type=int, default=10, help='')
     parser.add_argument('--max_len', type=int, default=768, help='')
     parser.add_argument('--max_src_len', type=int, default=450, help='')
     parser.add_argument('--local_rank', type=int, default=0, help='')
+    parser.add_argument('--lora_r', type=int, default=8, help='')
     parser.add_argument('--prompt_text', type=str,
                         default="你现在是一个信息抽取模型，请你帮我抽取出关系内容为\"性能故障\", \"部件故障\", \"组成\"和 \"检测工具\"的相关三元组，三元组内部用\"_\"连接，三元组之间用\\n分割。文本：",
                         help='')
@@ -58,7 +62,20 @@ def main():
 
     model = ChatGLMForConditionalGeneration.from_pretrained(args.model_dir)
     tokenizer = ChatGLMTokenizer.from_pretrained(args.model_dir)
+
+    config = LoraConfig(r=args.lora_r,
+                        lora_alpha=32,
+                        target_modules=["query_key_value"],
+                        lora_dropout=0.1,
+                        bias="none",
+                        task_type="CAUSAL_LM",
+                        inference_mode=False,
+                        )
+
+    model = get_peft_model(model, config)
     model = model.half().cuda()
+    # model = model.half().to(device)
+    
 
     conf = {"train_micro_batch_size_per_gpu": args.train_batch_size,
             "gradient_accumulation_steps": args.gradient_accumulation_steps,
@@ -93,10 +110,6 @@ def main():
             "steps_per_print": args.log_steps
             }
 
-    for name, param in model.named_parameters():
-        if not any(nd in name for nd in ["layers.27", "layers.26", "layers.25", "layers.24", "layers.23"]):
-            param.requires_grad = False
-
     print_trainable_parameters(model)
     for name, param in model.named_parameters():
         if param.requires_grad == True:
@@ -119,7 +132,9 @@ def main():
         train_iter = iter(train_dataloader)
         for step, batch in enumerate(train_iter):
             input_ids = batch["input_ids"].cuda()
+            # input_ids = batch["input_ids"].to(device)
             labels = batch["labels"].cuda()
+            # labels = batch["labels"].to(device)
             outputs = model_engine.forward(input_ids=input_ids, labels=labels)
             loss = outputs[0]
             if conf["gradient_accumulation_steps"] > 1:
@@ -139,4 +154,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # CUDA_VISIBLE_DEVICES=3 deepspeed --master_port 6666 finetuning_freeze.py
+    # CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 5555 finetuning_lora.py

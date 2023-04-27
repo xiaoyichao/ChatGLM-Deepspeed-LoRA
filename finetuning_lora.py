@@ -21,15 +21,6 @@ from shutil import copy
 from peft import LoraConfig, get_peft_model, get_peft_model_state_dict, prepare_model_for_int8_training, \
     set_peft_model_state_dict
 
-# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-# model = Model(input_size, output_size)
-# if torch.cuda.device_count() > 1:
-#     print("Let's use", torch.cuda.device_count(), "GPUs!")
-#     model = nn.DataParallel(model)
-# model.to(device)
-
-# os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-os.environ['CUDA_VISIBLE_DEVICES'] = 'all'
 
 
 def print_trainable_parameters(model):
@@ -163,4 +154,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # CUDA_VISIBLE_DEVICES=2 deepspeed --master_port 5555 finetuning_lora.py
+    # CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 5555 finetuning_lora.py
