@@ -13,7 +13,7 @@ import json
 import torch
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import Dataset
-
+from tqdm import tqdm
 
 class SFTDataSet(Dataset):
     """数据处理函数"""
@@ -21,9 +21,11 @@ class SFTDataSet(Dataset):
         # prompt_text = "你现在是一个信息抽取模型，请你帮我抽取出关系内容为\"性能故障\", \"部件故障\", \"组成\"和 \"检测工具\"的相关三元组，三元组内部用\"_\"连接，三元组之间用\\n分割。文本："
 
         self.all_data = []
+        pad_token_id4labels = -100
         with open(data_path, "r", encoding="utf-8") as fh:
             examples = json.load(fh)
-            for i, sample in enumerate(examples):
+            # for i, sample in enumerate(examples):
+            for sample in tqdm(examples):
                 example = self.format_example(sample)
                 prompt = example["context"]
                 target = example["target"]
@@ -36,14 +38,16 @@ class SFTDataSet(Dataset):
                 input_ids = prompt_ids + target_ids + [config.eos_token_id]
 
                 labels = (
-                    [-100] * (len(prompt_ids) - 1) + target_ids+[config.eos_token_id]
+                    [pad_token_id4labels] * (len(prompt_ids) - 1) + target_ids+[config.eos_token_id]
                 )
-                pad_len = max_seq_length - len(input_ids)
-                input_ids = input_ids + [tokenizer.pad_token_id] * pad_len
-                labels = labels + [-100] * (pad_len+1)
+                # 这个位置的padding是padding 到最大长度
+                # pad_len = max_seq_length - len(input_ids)
+                # input_ids = input_ids + [tokenizer.pad_token_id] * pad_len
+                # labels = labels + [pad_token_id4labels] * (pad_len+1)
+                labels = labels + [pad_token_id4labels]
 
                 self.all_data.append(
-                    {"prompt": prompt, "target": target, "input_ids": input_ids, "labels": labels})
+                    {"prompt": prompt, "target": target, "input_ids": input_ids, "labels": labels, "pad_token_id4input_ids":tokenizer.pad_token_id, "pad_token_id4labels":pad_token_id4labels})
                 
 
                         
@@ -69,7 +73,11 @@ def coll_fn(batch):
     for instance in batch:
         input_ids_list.append(torch.tensor(instance["input_ids"], dtype=torch.long))
         labels_list.append(torch.tensor(instance["labels"], dtype=torch.long))
-    input_ids = pad_sequence(input_ids_list, batch_first=True, padding_value=20003)
-    labels = pad_sequence(labels_list, batch_first=True, padding_value=20003)
+
+    pad_token_id4input_ids = instance["pad_token_id4input_ids"]
+    pad_token_id4labels = instance["pad_token_id4labels"]
+    # 这个位置的padding是batch内进行padding，不是最大长度
+    input_ids = pad_sequence(input_ids_list, batch_first=True, padding_value=pad_token_id4input_ids)
+    labels = pad_sequence(labels_list, batch_first=True, padding_value=pad_token_id4labels)
     return {"input_ids": input_ids,
             "labels": labels}
