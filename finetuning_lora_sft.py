@@ -41,13 +41,13 @@ def print_trainable_parameters(model):
 
 def set_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/test.json', type=str, help='')
-    # parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/alpaca_gpt4_data_zh.json', type=str, help='')
+    # parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/test.json', type=str, help='')
+    parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/alpaca_gpt4_data_zh.json', type=str, help='')
     parser.add_argument('--model_dir', default="/root/autodl-tmp/chatglm-6b", type=str, help='')
     parser.add_argument('--num_train_epochs', default=5, type=int, help='')
     parser.add_argument('--train_batch_size', default=2, type=int, help='')
     parser.add_argument('--gradient_accumulation_steps', default=1, type=int, help='')
-    parser.add_argument('--output_dir', default='output_dir_lora/', type=str, help='')
+    parser.add_argument('--output_dir', default='/root/autodl-tmp/ChatGLM-Finetuning/output_dir_lora/', type=str, help='')
     parser.add_argument('--log_steps', type=int, default=10, help='')
     parser.add_argument('--max_seq_length', type=int, default=768, help='')
     parser.add_argument('--local_rank', type=int, default=0, help='')
