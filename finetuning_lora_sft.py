@@ -1,12 +1,6 @@
 # -*- coding:utf-8 -*-
-# @project: ChatGLM-Finetuning
-# @filename: finetuning_lora
-# @author: 刘聪NLP
-# @zhihu: https://www.zhihu.com/people/LiuCongNLP
-# @contact: logcongcong@gmail.com
-# @time: 2023/4/4 16:34
 """
-    文件说明：
+    文件说明：给予LoRA算法进行SFT
             
 """
 from modeling_chatglm import ChatGLMForConditionalGeneration
@@ -41,10 +35,10 @@ def print_trainable_parameters(model):
 
 def set_args():
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/test.json', type=str, help='')
-    parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/alpaca_gpt4_data_zh.json', type=str, help='')
+    parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/test.json', type=str, help='')
+    # parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/alpaca_gpt4_data_zh.json', type=str, help='')
     parser.add_argument('--model_dir', default="/root/autodl-tmp/chatglm-6b", type=str, help='')
-    parser.add_argument('--num_train_epochs', default=5, type=int, help='')
+    parser.add_argument('--num_train_epochs', default=2, type=int, help='')
     parser.add_argument('--train_batch_size', default=2, type=int, help='')
     parser.add_argument('--gradient_accumulation_steps', default=1, type=int, help='')
     parser.add_argument('--output_dir', default='/root/autodl-tmp/ChatGLM-Finetuning/output_dir_lora/', type=str, help='')
