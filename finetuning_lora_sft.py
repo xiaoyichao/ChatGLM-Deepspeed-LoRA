@@ -15,8 +15,9 @@ import torch
 import deepspeed
 import argparse
 from torch.utils.data import RandomSampler, DataLoader
-from data_set import Seq2SeqDataSet, coll_fn
+from data_set_sft import SFTDataSet, coll_fn
 import os
+import transformers
 from shutil import copy
 from peft import LoraConfig, get_peft_model, get_peft_model_state_dict, prepare_model_for_int8_training, \
     set_peft_model_state_dict
@@ -40,15 +41,15 @@ def print_trainable_parameters(model):
 
 def set_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/spo_0.json', type=str, help='')
+    parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/alpaca_gpt4_data_zh.json', type=str, help='')
     parser.add_argument('--model_dir', default="/root/autodl-tmp/chatglm-6b", type=str, help='')
     parser.add_argument('--num_train_epochs', default=5, type=int, help='')
     parser.add_argument('--train_batch_size', default=2, type=int, help='')
     parser.add_argument('--gradient_accumulation_steps', default=1, type=int, help='')
     parser.add_argument('--output_dir', default='output_dir_lora/', type=str, help='')
     parser.add_argument('--log_steps', type=int, default=10, help='')
-    parser.add_argument('--max_len', type=int, default=768, help='')
-    parser.add_argument('--max_src_len', type=int, default=450, help='')
+    parser.add_argument('--max_seq_length', type=int, default=768, help='')
+    # parser.add_argument('--max_src_len', type=int, default=450, help='')
     parser.add_argument('--local_rank', type=int, default=0, help='')
     parser.add_argument('--lora_r', type=int, default=8, help='')
     parser.add_argument('--prompt_text', type=str,
@@ -62,8 +63,8 @@ def main():
 
     model = ChatGLMForConditionalGeneration.from_pretrained(args.model_dir)
     tokenizer = ChatGLMTokenizer.from_pretrained(args.model_dir)
-
-    config = LoraConfig(r=args.lora_r,
+    config = transformers.AutoConfig.from_pretrained(args.model_dir,trust_remote_code=True)
+    Lora_config = LoraConfig(r=args.lora_r,
                         lora_alpha=32,
                         target_modules=["query_key_value"],
                         lora_dropout=0.1,
@@ -72,7 +73,7 @@ def main():
                         inference_mode=False,
                         )
 
-    model = get_peft_model(model, config)
+    model = get_peft_model(model, Lora_config)
     model = model.half().cuda()
     # model = model.half().to(device)
     
@@ -115,7 +116,7 @@ def main():
         if param.requires_grad == True:
             print(name)
 
-    train_dataset = Seq2SeqDataSet(args.train_path, tokenizer, args.max_len, args.max_src_len, args.prompt_text)
+    train_dataset = SFTDataSet(args.train_path, tokenizer, config, args.max_seq_length)
     train_dataloader = DataLoader(train_dataset,
                                   batch_size=conf["train_micro_batch_size_per_gpu"],
                                   sampler=RandomSampler(train_dataset),

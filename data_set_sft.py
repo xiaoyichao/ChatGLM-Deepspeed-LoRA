@@ -22,8 +22,8 @@ class SFTDataSet(Dataset):
 
         self.all_data = []
         with open(data_path, "r", encoding="utf-8") as fh:
-            for i, line in enumerate(fh):
-                sample = json.loads(line.strip())
+            examples = json.load(fh)
+            for i, sample in enumerate(examples):
                 example = self.format_example(sample)
                 prompt = example["context"]
                 target = example["target"]
@@ -34,9 +34,19 @@ class SFTDataSet(Dataset):
                     truncation=True,
                     add_special_tokens=False)
                 input_ids = prompt_ids + target_ids + [config.eos_token_id]
-                feature = {"input_ids": input_ids[:max_seq_length], "seq_len": len(prompt_ids)}
-                self.all_data.append(feature)
-                            
+
+                labels = (
+                    [-100] * (len(prompt_ids) - 1) + target_ids+[config.eos_token_id]
+                )
+                pad_len = max_seq_length - len(input_ids)
+                input_ids = input_ids + [tokenizer.pad_token_id] * pad_len
+                labels = labels + [-100] * (pad_len+1)
+
+                self.all_data.append(
+                    {"prompt": prompt, "target": target, "input_ids": input_ids, "labels": labels})
+                
+
+                        
 
     def __len__(self):
         return len(self.all_data)
@@ -59,5 +69,7 @@ def coll_fn(batch):
     for instance in batch:
         input_ids_list.append(torch.tensor(instance["input_ids"], dtype=torch.long))
         labels_list.append(torch.tensor(instance["labels"], dtype=torch.long))
-    return {"input_ids": pad_sequence(input_ids_list, batch_first=True, padding_value=20003),
-            "labels": pad_sequence(labels_list, batch_first=True, padding_value=20003)}
+    input_ids = pad_sequence(input_ids_list, batch_first=True, padding_value=20003)
+    labels = pad_sequence(labels_list, batch_first=True, padding_value=20003)
+    return {"input_ids": input_ids,
+            "labels": labels}
