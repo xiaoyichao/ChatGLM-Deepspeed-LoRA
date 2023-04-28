@@ -50,12 +50,8 @@ def set_args():
     parser.add_argument('--output_dir', default='output_dir_lora/', type=str, help='')
     parser.add_argument('--log_steps', type=int, default=10, help='')
     parser.add_argument('--max_seq_length', type=int, default=768, help='')
-    # parser.add_argument('--max_src_len', type=int, default=450, help='')
     parser.add_argument('--local_rank', type=int, default=0, help='')
     parser.add_argument('--lora_r', type=int, default=8, help='')
-    parser.add_argument('--prompt_text', type=str,
-                        default="你现在是一个信息抽取模型，请你帮我抽取出关系内容为\"性能故障\", \"部件故障\", \"组成\"和 \"检测工具\"的相关三元组，三元组内部用\"_\"连接，三元组之间用\\n分割。文本：",
-                        help='')
     return parser.parse_args()
 
 
@@ -76,7 +72,6 @@ def main():
 
     model = get_peft_model(model, Lora_config)
     model = model.half().cuda()
-    # model = model.half().to(device)
     
 
     conf = {"train_micro_batch_size_per_gpu": args.train_batch_size,
@@ -134,9 +129,7 @@ def main():
         train_iter = iter(train_dataloader)
         for step, batch in enumerate(train_iter):
             input_ids = batch["input_ids"].cuda()
-            # input_ids = batch["input_ids"].to(device)
             labels = batch["labels"].cuda()
-            # labels = batch["labels"].to(device)
             outputs = model_engine.forward(input_ids=input_ids, labels=labels)
             loss = outputs[0]
             if conf["gradient_accumulation_steps"] > 1:
@@ -156,4 +149,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 5555 finetuning_lora.py
+    # CUDA_VISIBLE_DEVICES=0 deepspeed --master_port 5555 finetuning_lora_sft.py
