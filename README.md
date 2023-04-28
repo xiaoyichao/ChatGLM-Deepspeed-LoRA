@@ -5,7 +5,7 @@ pipreqs ./     --force
 pip install -r requirements.txt
 pip install peft==0.2.0 -i https://pypi.tuna.tsinghua.edu.cn/simple
 conda install --channel https://conda.anaconda.org/dhirschfeld mpi4py
-
+python finetuning_lora_sft.py && shutdown now
 本项目主要针对ChatGLM模型进行不同方式的微调，并对比大模型在不同微调方法上的效果，主要针对信息抽取任务、生成任务、分类任务等。
 
 为了模型适配其他方法，对官方ChatGLM模型文件进行了部分修改，将820-821行参数冻结代码删掉，再外部进行参数冻结。
