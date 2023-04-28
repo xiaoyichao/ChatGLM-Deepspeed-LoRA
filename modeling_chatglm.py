@@ -823,7 +823,8 @@ class ChatGLMModel(ChatGLMPreTrainedModel):
             num_embeddings=self.vocab_size, embedding_dim=self.hidden_size,
             dtype=self.params_dtype
         )
-        self.gradient_checkpointing = False
+        self.gradient_checkpointing = False #  use GPU
+        # self.gradient_checkpointing = True #  use CPU
 
         def get_layer(layer_id):
             return GLMBlock(

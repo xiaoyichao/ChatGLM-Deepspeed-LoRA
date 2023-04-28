@@ -5,6 +5,7 @@ pipreqs ./     --force
 pip install -r requirements.txt
 pip install peft==0.2.0 -i https://pypi.tuna.tsinghua.edu.cn/simple
 conda install --channel https://conda.anaconda.org/dhirschfeld mpi4py
+CUDA_VISIBLE_DEVICES=0 deepspeed finetuning_lora_sft.py --num_train_epochs 2 --train_batch_size 2 --lora_r 8  && shutdown now
 python finetuning_lora_sft.py && shutdown now
 
 数据集来源

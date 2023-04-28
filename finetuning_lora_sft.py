@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
     文件说明：给予LoRA算法进行SFT
-            
+       
 """
 from modeling_chatglm import ChatGLMForConditionalGeneration
 from tokenization_chatglm import ChatGLMTokenizer
@@ -35,8 +35,8 @@ def print_trainable_parameters(model):
 
 def set_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/test.json', type=str, help='')
-    # parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/alpaca_gpt4_data_zh.json', type=str, help='')
+    # parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/test.json', type=str, help='')
+    parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/alpaca_gpt4_data_zh.json', type=str, help='')
     parser.add_argument('--model_dir', default="/root/autodl-tmp/chatglm-6b", type=str, help='')
     parser.add_argument('--num_train_epochs', default=2, type=int, help='')
     parser.add_argument('--train_batch_size', default=2, type=int, help='')
