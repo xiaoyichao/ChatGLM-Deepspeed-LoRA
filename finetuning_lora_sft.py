@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 """
     文件说明：给予LoRA算法进行SFT
-       
+    CUDA_VISIBLE_DEVICES=0 deepspeed finetuning_lora_sft.py --num_train_epochs 2 --train_batch_size 2 --lora_r 8  && shutdown now
 """
 from modeling_chatglm import ChatGLMForConditionalGeneration
 from tokenization_chatglm import ChatGLMTokenizer
