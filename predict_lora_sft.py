@@ -13,12 +13,13 @@ from data_set_sft import format_example
 import time
 import os
 import argparse
+import transformers
 
 
 def set_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--test_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/test.json', type=str, help='')
-    parser.add_argument('--device', default='0', type=str, help='')
+    parser.add_argument('--device', default='1', type=str, help='')
     parser.add_argument('--ori_model_dir',
                         default="/root/autodl-tmp/chatglm-6b", type=str,
                         help='')
@@ -33,6 +34,8 @@ def main():
     args = set_args()
     model = ChatGLMForConditionalGeneration.from_pretrained(args.ori_model_dir)
     tokenizer = ChatGLMTokenizer.from_pretrained(args.model_dir)
+    config = transformers.AutoConfig.from_pretrained(args.ori_model_dir,trust_remote_code=True)
+
     model.eval()
     model = PeftModel.from_pretrained(model, args.model_dir, torch_dtype=torch.float32)
     model.half().to("cuda:{}".format(args.device))
@@ -59,13 +62,13 @@ def main():
                 input_ids = torch.tensor([input_ids]).to("cuda:{}".format(args.device))
                 generation_kwargs = {
                     "min_length": 5,
-                    "max_new_tokens": max_tgt_len,
+                    "max_new_tokens": max_seq_length,
                     "top_p": 0.7,
                     "temperature": 0.95,
                     "do_sample": False,
                     "num_return_sequences": 1,
                 }
-                response = model.generate_one(input_ids, **generation_kwargs)
+                response = model.stream_generate(input_ids, **generation_kwargs)
                 res = []
                 for i_r in range(generation_kwargs["num_return_sequences"]):
                     outputs = response.tolist()[i_r][input_ids.shape[1]:]
