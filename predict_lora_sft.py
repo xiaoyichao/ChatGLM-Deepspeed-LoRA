@@ -10,6 +10,7 @@ model = AutoModel.from_pretrained("/root/autodl-tmp/chatglm-6b", trust_remote_co
 tokenizer = AutoTokenizer.from_pretrained("/root/autodl-tmp/chatglm-6b", trust_remote_code=True)
 model = PeftModel.from_pretrained(model, "/app/ChatGLM-Deepspeed-LoRA/output_dir_lora/global_step-48818")
 model = model.half().cuda()
+model = model.eval()
 
 instructions = json.load(open("/app/ChatGLM-Deepspeed-LoRA/data/test.json"))
 

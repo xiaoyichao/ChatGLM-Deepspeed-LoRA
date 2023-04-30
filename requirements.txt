@@ -8,3 +8,4 @@ tqdm==4.65.0
 cpm_kernels==1.0.11
 datasets==2.12.0
 tensorflow==2.12.0
+gradio
