@@ -24,9 +24,8 @@ class SFTDataSet(Dataset):
         pad_token_id4labels = -100
         with open(data_path, "r", encoding="utf-8") as fh:
             examples = json.load(fh)
-            # for i, sample in enumerate(examples):
             for sample in tqdm(examples):
-                example = self.format_example(sample)
+                example = format_example(sample)
                 prompt = example["context"]
                 target = example["target"]
                 prompt_ids = tokenizer.encode(prompt, max_length=max_seq_length, truncation=True)
@@ -59,13 +58,14 @@ class SFTDataSet(Dataset):
         instance = self.all_data[item]
         return instance
 
-    def format_example(self, example: dict) -> dict:
-        context = f"Instruction: {example['instruction']}\n"
-        if example.get("input"):
-            context += f"Input: {example['input']}\n"
-        context += "Answer: "
-        target = example["output"]
-        return {"context": context, "target": target}
+
+def format_example(example: dict) -> dict:
+    context = f"Instruction: {example['instruction']}\n"
+    if example.get("input"):
+        context += f"Input: {example['input']}\n"
+    context += "Answer: "
+    target = example["output"]
+    return {"context": context, "target": target}
 
 
 def coll_fn(batch):

@@ -9,6 +9,7 @@ from modeling_chatglm import ChatGLMForConditionalGeneration
 from tokenization_chatglm import ChatGLMTokenizer
 from peft import get_peft_model, LoraConfig, TaskType, PeftModel
 from tqdm import tqdm
+from data_set_sft import format_example
 import time
 import os
 import argparse
@@ -16,19 +17,15 @@ import argparse
 
 def set_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--test_path', default='data/spo_1.json', type=str, help='')
-    parser.add_argument('--device', default='3', type=str, help='')
+    parser.add_argument('--test_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/test.json', type=str, help='')
+    parser.add_argument('--device', default='0', type=str, help='')
     parser.add_argument('--ori_model_dir',
-                        default="/data/work/lcong/public_model_path/ChatGLM-6B/", type=str,
+                        default="/root/autodl-tmp/chatglm-6b", type=str,
                         help='')
     parser.add_argument('--model_dir',
-                        default="/data/work/lcong/ChatGPT/ChatGLM-Finetuning/output_dir_lora/global_step-3600/", type=str,
+                        default="/root/autodl-tmp/ChatGLM-Finetuning/output_dir_lora/global_step-48818", type=str,
                         help='')
-    parser.add_argument('--max_len', type=int, default=768, help='')
-    parser.add_argument('--max_src_len', type=int, default=450, help='')
-    parser.add_argument('--prompt_text', type=str,
-                        default="你现在是一个信息抽取模型，请你帮我抽取出关系内容为\"性能故障\", \"部件故障\", \"组成\"和 \"检测工具\"的相关三元组，三元组内部用\"_\"连接，三元组之间用\\n分割。文本：",
-                        help='')
+    parser.add_argument('--max_seq_length', type=int, default=768, help='')
     return parser.parse_args()
 
 
@@ -42,21 +39,22 @@ def main():
     model.eval()
     save_data = []
     f1 = 0.0
-    max_tgt_len = args.max_len - args.max_src_len - 3
+    max_seq_length = args.max_seq_length
     s_time = time.time()
     with open(args.test_path, "r", encoding="utf-8") as fh:
-        for i, line in enumerate(tqdm(fh, desc="iter")):
+        examples = json.load(fh)
+        for sample in tqdm(examples):
+            example = format_example(sample)
+            prompt = example["context"]
+            target = example["target"]
             with torch.no_grad():
-                sample = json.loads(line.strip())
-                src_tokens = tokenizer.tokenize(sample["text"])
-                prompt_tokens = tokenizer.tokenize(args.prompt_text)
-
-                if len(src_tokens) > args.max_src_len - len(prompt_tokens):
-                    src_tokens = src_tokens[:args.max_src_len - len(prompt_tokens)]
-
-                tokens = prompt_tokens + src_tokens + ["[gMASK]", "<sop>"]
-                input_ids = tokenizer.convert_tokens_to_ids(tokens)
-                # input_ids = tokenizer.encode("帮我写个快排算法")
+                prompt_ids = tokenizer.encode(prompt, max_length=max_seq_length, truncation=True)
+                target_ids = tokenizer.encode(
+                    target,
+                    max_length=max_seq_length,
+                    truncation=True,
+                    add_special_tokens=False)
+                input_ids = prompt_ids + target_ids + [config.eos_token_id]
 
                 input_ids = torch.tensor([input_ids]).to("cuda:{}".format(args.device))
                 generation_kwargs = {

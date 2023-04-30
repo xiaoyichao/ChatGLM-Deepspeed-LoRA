@@ -2,6 +2,10 @@
 """
     文件说明：给予LoRA算法进行SFT
     CUDA_VISIBLE_DEVICES=0 deepspeed finetuning_lora_sft.py --num_train_epochs 2 --train_batch_size 2 --lora_r 8  && shutdown now
+
+    CUDA_VISIBLE_DEVICES=0,1 deepspeed finetuning_lora_sft.py --num_train_epochs 2 --train_batch_size 2 --lora_r 8  && shutdown now
+
+    
 """
 from modeling_chatglm import ChatGLMForConditionalGeneration
 from tokenization_chatglm import ChatGLMTokenizer
@@ -41,7 +45,7 @@ def set_args():
     parser.add_argument('--num_train_epochs', default=2, type=int, help='')
     parser.add_argument('--train_batch_size', default=2, type=int, help='')
     parser.add_argument('--gradient_accumulation_steps', default=1, type=int, help='')
-    parser.add_argument('--output_dir', default='/root/autodl-tmp/ChatGLM-Finetuning/output_dir_lora/', type=str, help='')
+    parser.add_argument('--output_dir', default='/root/autodl-tmp/ChatGLM-Finetuning/output_dir_lora_1/', type=str, help='')
     parser.add_argument('--log_steps', type=int, default=10, help='')
     parser.add_argument('--max_seq_length', type=int, default=768, help='')
     parser.add_argument('--local_rank', type=int, default=0, help='')
