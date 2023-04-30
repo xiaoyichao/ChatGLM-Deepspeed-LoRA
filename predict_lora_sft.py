@@ -18,13 +18,13 @@ import transformers
 
 def set_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--test_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/test.json', type=str, help='')
+    parser.add_argument('--test_path', default='/app/ChatGLM-Deepspeed-LoRA/data/test.json', type=str, help='')
     parser.add_argument('--device', default='1', type=str, help='')
     parser.add_argument('--ori_model_dir',
                         default="/root/autodl-tmp/chatglm-6b", type=str,
                         help='')
     parser.add_argument('--model_dir',
-                        default="/root/autodl-tmp/ChatGLM-Finetuning/output_dir_lora/global_step-48818", type=str,
+                        default="/app/ChatGLM-Deepspeed-LoRA/output_dir_lora/global_step-48818", type=str,
                         help='')
     parser.add_argument('--max_seq_length', type=int, default=768, help='')
     return parser.parse_args()
@@ -33,7 +33,7 @@ def set_args():
 def main():
     args = set_args()
     model = ChatGLMForConditionalGeneration.from_pretrained(args.ori_model_dir)
-    tokenizer = ChatGLMTokenizer.from_pretrained(args.model_dir)
+    tokenizer = ChatGLMTokenizer.from_pretrained(args.ori_model_dir)
     config = transformers.AutoConfig.from_pretrained(args.ori_model_dir,trust_remote_code=True)
 
     model.eval()
@@ -68,7 +68,7 @@ def main():
                     "do_sample": False,
                     "num_return_sequences": 1,
                 }
-                response = model.stream_generate(input_ids, **generation_kwargs)
+                response = model.generate(input_ids, **generation_kwargs)
                 res = []
                 for i_r in range(generation_kwargs["num_return_sequences"]):
                     outputs = response.tolist()[i_r][input_ids.shape[1]:]
