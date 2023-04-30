@@ -1,3 +1,7 @@
+## TODO
+
+增加ZERO_STAGE=$2的参数
+实现多卡训练
 
 ## ChatGLM微调
 
