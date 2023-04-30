@@ -23,12 +23,12 @@ with torch.no_grad():
         ids = tokenizer.encode(prompt)
         input_ids = torch.LongTensor([ids]).cuda()
         generation_kwargs = {
-            # "min_length": 5,
-            "max_new_tokens": 768,
-            # "top_p": 0.7,
+            "min_length": 5,
+            "max_new_tokens": 512,
+            "top_p": 0.7,
             "temperature": 1,
             "do_sample": False,
-            # "num_return_sequences": 1,
+            "num_return_sequences": 1,
         }
         out = model.generate(
             input_ids=input_ids,
