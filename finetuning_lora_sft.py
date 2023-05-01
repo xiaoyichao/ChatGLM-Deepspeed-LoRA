@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 """
     文件说明：给予LoRA算法进行SFT
+    CUDA_VISIBLE_DEVICES=0 deepspeed finetuning_lora_sft.py --num_train_epochs 5 --train_batch_size 2 --lora_r 8 
+
     CUDA_VISIBLE_DEVICES=0 deepspeed finetuning_lora_sft.py --num_train_epochs 2 --train_batch_size 2 --lora_r 8  && shutdown now
 
     CUDA_VISIBLE_DEVICES=0,1 deepspeed finetuning_lora_sft.py --num_train_epochs 2 --train_batch_size 2 --lora_r 8  && shutdown now
@@ -39,13 +41,13 @@ def print_trainable_parameters(model):
 
 def set_args():
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/test.json', type=str, help='')
-    parser.add_argument('--train_path', default='/app/ChatGLM-Deepspeed-LoRA/data/alpaca_gpt4_data_zh.json', type=str, help='')
+    parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/test.json', type=str, help='')
+    # parser.add_argument('--train_path', default='/app/ChatGLM-Deepspeed-LoRA/data/alpaca_gpt4_data_zh.json', type=str, help='')
     parser.add_argument('--model_dir', default="/root/autodl-tmp/chatglm-6b", type=str, help='')
     parser.add_argument('--num_train_epochs', default=2, type=int, help='')
     parser.add_argument('--train_batch_size', default=2, type=int, help='')
     parser.add_argument('--gradient_accumulation_steps', default=1, type=int, help='')
-    parser.add_argument('--output_dir', default='/root/autodl-tmp/ChatGLM-Finetuning/output_dir_lora_1/', type=str, help='')
+    parser.add_argument('--output_dir', default='/app/ChatGLM-Deepspeed-LoRA/output_dir_lora/0501', type=str, help='')
     parser.add_argument('--log_steps', type=int, default=10, help='')
     parser.add_argument('--max_seq_length', type=int, default=768, help='')
     parser.add_argument('--local_rank', type=int, default=0, help='')
@@ -89,19 +91,51 @@ def main():
             "fp16": {
                 "enabled": True
             },
+            # "zero_optimization": {
+            #     "stage": 1,
+            #     "offload_optimizer": {
+            #         "device": "cpu",
+            #         "pin_memory": True
+            #     },
+            #     "allgather_partitions": True,
+            #     "allgather_bucket_size": 2e8,
+            #     "overlap_comm": True,
+            #     "reduce_scatter": True,
+            #     "reduce_bucket_size": 2e8,
+            #     "contiguous_gradients": True
+            # },
+
             "zero_optimization": {
-                "stage": 1,
+                "stage": 2,
                 "offload_optimizer": {
                     "device": "cpu",
                     "pin_memory": True
                 },
                 "allgather_partitions": True,
                 "allgather_bucket_size": 2e8,
-                "overlap_comm": True,
                 "reduce_scatter": True,
                 "reduce_bucket_size": 2e8,
+                "overlap_comm": True,
                 "contiguous_gradients": True
             },
+
+            # "zero_optimization": {
+            #     "stage": 3,
+            #     "contiguous_gradients": True,
+            #     "stage3_max_live_parameters": 1e9,
+            #     "stage3_max_reuse_distance": 1e9,
+            #     "stage3_prefetch_bucket_size": 1e7,
+            #     "stage3_param_persistence_threshold": 1e5,
+            #     "reduce_bucket_size": 1e7,
+            #     "sub_group_size": 1e9,
+            #     "offload_optimizer": {
+            #         "device": "cpu"
+            #     },
+            #     "offload_param": {
+            #         "device": "cpu"
+            # }
+            # },
+
             "steps_per_print": args.log_steps
             }
 
@@ -140,7 +174,7 @@ def main():
             if global_step % args.log_steps == 0:
                 print("loss:{}, global_step:{}".format(float(loss.item()), global_step))
         save_dir = os.path.join(args.output_dir, f"global_step-{global_step}")
-        model_engine.save_pretrained(save_dir)
+        model_engine.save_pretrained(save_dir, overwrite_output_dir=True)
         copy(os.path.join(args.model_dir, "tokenizer_config.json"), os.path.join(save_dir, "tokenizer_config.json"))
         copy(os.path.join(args.model_dir, "ice_text.model"), os.path.join(save_dir, "ice_text.model"))
 
