@@ -1,16 +1,25 @@
-from transformers import AutoModel, AutoTokenizer
 import gradio as gr
 import mdtex2html
-from peft import PeftModel
+import torch
+from peft import get_peft_model, LoraConfig, TaskType
+from transformers import AutoModel
+from transformers import AutoTokenizer
 
-# tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm-6b", trust_remote_code=True)
-# model = AutoModel.from_pretrained("THUDM/chatglm-6b", trust_remote_code=True).half().cuda()
-# model = model.eval()
-
-model = AutoModel.from_pretrained("/root/autodl-tmp/chatglm-6b", trust_remote_code=True, load_in_8bit=False)
 tokenizer = AutoTokenizer.from_pretrained("/root/autodl-tmp/chatglm-6b", trust_remote_code=True)
-model = PeftModel.from_pretrained(model, "/app/ChatGLM-Deepspeed-LoRA/output/0502/global_step-48818")
-model = model.half().cuda()
+model = AutoModel.from_pretrained("/root/autodl-tmp/chatglm-6b", trust_remote_code=True).half().cuda()
+torch.set_default_tensor_type(torch.cuda.HalfTensor)
+
+# 加载基于alpaca 52k数据微调的lora权重
+peft_path = "/app/ChatGLM-Deepspeed-LoRA/output/0502/global_step-48818/adapter_model.bin"
+peft_config = LoraConfig(
+    task_type=TaskType.CAUSAL_LM, inference_mode=False,
+    r=8,
+    lora_alpha=32, lora_dropout=0.1
+)
+model = get_peft_model(model, peft_config)
+model.load_state_dict(torch.load(peft_path), strict=False)
+torch.set_default_tensor_type(torch.cuda.FloatTensor)
+
 model = model.eval()
 
 """Override Chatbot.postprocess"""
@@ -58,7 +67,7 @@ def parse_text(text):
                     line = line.replace("(", "&#40;")
                     line = line.replace(")", "&#41;")
                     line = line.replace("$", "&#36;")
-                lines[i] = "<br>"+line
+                lines[i] = "<br>" + line
     text = "".join(lines)
     return text
 
@@ -67,7 +76,7 @@ def predict(input, chatbot, max_length, top_p, temperature, history):
     chatbot.append((parse_text(input), ""))
     for response, history in model.stream_chat(tokenizer, input, history, max_length=max_length, top_p=top_p,
                                                temperature=temperature):
-        chatbot[-1] = (parse_text(input), parse_text(response))       
+        chatbot[-1] = (parse_text(input), parse_text(response))
 
         yield chatbot, history
 
@@ -81,7 +90,8 @@ def reset_state():
 
 
 with gr.Blocks() as demo:
-    gr.HTML("""<h1 align="center">ChatGLM</h1>""")
+    gr.HTML("""<h1 align="center">InstructGLM</h1>""")
+    gr.HTML("""<p align="center">基于Alpaca 52k微调的lora权重</p>""")
 
     chatbot = gr.Chatbot()
     with gr.Row():
@@ -105,4 +115,4 @@ with gr.Blocks() as demo:
 
     emptyBtn.click(reset_state, outputs=[chatbot, history], show_progress=True)
 
-demo.queue().launch(share=False, inbrowser=True)
+demo.queue().launch(share=True, inbrowser=True)
