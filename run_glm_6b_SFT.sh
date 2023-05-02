@@ -8,7 +8,7 @@ mkdir -p $OUTPUT_PATH
 
 deepspeed finetuning_lora_sft.py \
     --num_train_epochs 1 \
-    --train_batch_size 2 \
-    --lora_r 8 \
+    --train_batch_size 1 \
+    --lora_r 32 \
    --output_dir $OUTPUT_PATH \
    &> $OUTPUT_PATH/training.log
