@@ -41,13 +41,13 @@ def print_trainable_parameters(model):
 
 def set_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/test.json', type=str, help='')
-    # parser.add_argument('--train_path', default='/app/ChatGLM-Deepspeed-LoRA/data/alpaca_gpt4_data_zh.json', type=str, help='')
+    # parser.add_argument('--train_path', default='/root/autodl-tmp/ChatGLM-Finetuning/data/test.json', type=str, help='')
+    parser.add_argument('--train_path', default='/app/ChatGLM-Deepspeed-LoRA/data/alpaca_gpt4_data_zh.json', type=str, help='')
     parser.add_argument('--model_dir', default="/root/autodl-tmp/chatglm-6b", type=str, help='')
     parser.add_argument('--num_train_epochs', default=2, type=int, help='')
     parser.add_argument('--train_batch_size', default=2, type=int, help='')
     parser.add_argument('--gradient_accumulation_steps', default=1, type=int, help='')
-    parser.add_argument('--output_dir', default='/app/ChatGLM-Deepspeed-LoRA/output_dir_lora/0501', type=str, help='')
+    parser.add_argument('--output_dir', default='/app/ChatGLM-Deepspeed-LoRA/output_dir_lora/0502', type=str, help='')
     parser.add_argument('--log_steps', type=int, default=10, help='')
     parser.add_argument('--max_seq_length', type=int, default=768, help='')
     parser.add_argument('--local_rank', type=int, default=0, help='')
@@ -91,33 +91,33 @@ def main():
             "fp16": {
                 "enabled": True
             },
-            # "zero_optimization": {
-            #     "stage": 1,
-            #     "offload_optimizer": {
-            #         "device": "cpu",
-            #         "pin_memory": True
-            #     },
-            #     "allgather_partitions": True,
-            #     "allgather_bucket_size": 2e8,
-            #     "overlap_comm": True,
-            #     "reduce_scatter": True,
-            #     "reduce_bucket_size": 2e8,
-            #     "contiguous_gradients": True
-            # },
-
             "zero_optimization": {
-                "stage": 2,
+                "stage": 1,
                 "offload_optimizer": {
                     "device": "cpu",
                     "pin_memory": True
                 },
                 "allgather_partitions": True,
                 "allgather_bucket_size": 2e8,
+                "overlap_comm": True,
                 "reduce_scatter": True,
                 "reduce_bucket_size": 2e8,
-                "overlap_comm": True,
                 "contiguous_gradients": True
             },
+
+            # "zero_optimization": {
+            #     "stage": 2,
+            #     "offload_optimizer": {
+            #         "device": "cpu",
+            #         "pin_memory": True
+            #     },
+            #     "allgather_partitions": True,
+            #     "allgather_bucket_size": 2e8,
+            #     "reduce_scatter": True,
+            #     "reduce_bucket_size": 2e8,
+            #     "overlap_comm": True,
+            #     "contiguous_gradients": True
+            # },
 
             # "zero_optimization": {
             #     "stage": 3,
