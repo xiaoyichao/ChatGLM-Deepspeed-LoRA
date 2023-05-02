@@ -61,23 +61,23 @@ def main():
     model = ChatGLMForConditionalGeneration.from_pretrained(args.model_dir)
     tokenizer = ChatGLMTokenizer.from_pretrained(args.model_dir)
     config = transformers.AutoConfig.from_pretrained(args.model_dir,trust_remote_code=True)
-    # Lora_config = LoraConfig(
-    #             task_type="CAUSAL_LM",
-    #             inference_mode=False,
-    #             r=32,
-    #             lora_alpha=32,
-    #             lora_dropout=0.1,
-    #             # target_modules=["query_key_value", "dense", "dense_h_to_4h", "dense_4h_to_h"],
-    #         )
-    
     Lora_config = LoraConfig(
                 task_type="CAUSAL_LM",
                 inference_mode=False,
                 r=32,
                 lora_alpha=32,
                 lora_dropout=0.1,
-                target_modules=["query_key_value", "dense", "dense_h_to_4h", "dense_4h_to_h"],
+                # target_modules=["query_key_value", "dense", "dense_h_to_4h", "dense_4h_to_h"],
             )
+    
+    # Lora_config = LoraConfig(
+    #             task_type="CAUSAL_LM",
+    #             inference_mode=False,
+    #             r=32,
+    #             lora_alpha=32,
+    #             lora_dropout=0.1,
+    #             target_modules=["query_key_value", "dense", "dense_h_to_4h", "dense_4h_to_h"],
+    #         )
     # Lora_config = LoraConfig(r=args.lora_r,
     #                     lora_alpha=32,
     #                     target_modules=["query_key_value"],
