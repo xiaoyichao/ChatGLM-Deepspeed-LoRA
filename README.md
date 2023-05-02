@@ -11,11 +11,14 @@ conda install --channel https://conda.anaconda.org/dhirschfeld mpi4py
 CUDA_VISIBLE_DEVICES=0 deepspeed finetuning_lora_sft.py --num_train_epochs 2 --train_batch_size 2 --lora_r 8  && shutdown now
 
 
-nohup bash test.sh  && shutdown now > nohup_bert.out 2>&1 &
+nohup bash run_glm_6b_SFT.sh  && shutdown now > nohup_bert.out 2>&1 &
+
+nohup bash run_glm_6b_SFT.sh  > nohup_bert.out 2>&1 &
 
 python finetuning_lora_sft.py && shutdown now
 
 ps -ef|grep web
+ps -ef|grep finetuning_lora_sft
 数据集来源
 https://github.com/Instruction-Tuning-with-GPT-4/GPT-4-LLM
 

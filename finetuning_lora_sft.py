@@ -47,7 +47,7 @@ def set_args():
     parser.add_argument('--num_train_epochs', default=2, type=int, help='')
     parser.add_argument('--train_batch_size', default=2, type=int, help='')
     parser.add_argument('--gradient_accumulation_steps', default=1, type=int, help='')
-    parser.add_argument('--output_dir', default='/app/ChatGLM-Deepspeed-LoRA/output_dir_lora/0502', type=str, help='')
+    parser.add_argument('--output_dir', default='/app/ChatGLM-Deepspeed-LoRA/output_dir_lora/0502-2', type=str, help='')
     parser.add_argument('--log_steps', type=int, default=10, help='')
     parser.add_argument('--max_seq_length', type=int, default=768, help='')
     parser.add_argument('--local_rank', type=int, default=0, help='')
@@ -61,17 +61,34 @@ def main():
     model = ChatGLMForConditionalGeneration.from_pretrained(args.model_dir)
     tokenizer = ChatGLMTokenizer.from_pretrained(args.model_dir)
     config = transformers.AutoConfig.from_pretrained(args.model_dir,trust_remote_code=True)
-    Lora_config = LoraConfig(r=args.lora_r,
-                        lora_alpha=32,
-                        target_modules=["query_key_value"],
-                        lora_dropout=0.1,
-                        bias="none",
-                        task_type="CAUSAL_LM",
-                        inference_mode=False,
-                        )
+    # Lora_config = LoraConfig(
+    #             task_type="CAUSAL_LM",
+    #             inference_mode=False,
+    #             r=32,
+    #             lora_alpha=32,
+    #             lora_dropout=0.1,
+    #             # target_modules=["query_key_value", "dense", "dense_h_to_4h", "dense_4h_to_h"],
+    #         )
+    
+    Lora_config = LoraConfig(
+                task_type="CAUSAL_LM",
+                inference_mode=False,
+                r=32,
+                lora_alpha=32,
+                lora_dropout=0.1,
+                target_modules=["query_key_value", "dense", "dense_h_to_4h", "dense_4h_to_h"],
+            )
+    # Lora_config = LoraConfig(r=args.lora_r,
+    #                     lora_alpha=32,
+    #                     target_modules=["query_key_value"],
+    #                     lora_dropout=0.1,
+    #                     bias="none",
+    #                     task_type="CAUSAL_LM",
+    #                     inference_mode=False,
+    #                     )
 
     model = get_peft_model(model, Lora_config)
-    model = model.half().cuda()
+    model = model.cuda()
     
 
     conf = {"train_micro_batch_size_per_gpu": args.train_batch_size,

@@ -9,7 +9,7 @@ from peft import PeftModel
 
 model = AutoModel.from_pretrained("/root/autodl-tmp/chatglm-6b", trust_remote_code=True, load_in_8bit=False)
 tokenizer = AutoTokenizer.from_pretrained("/root/autodl-tmp/chatglm-6b", trust_remote_code=True)
-model = PeftModel.from_pretrained(model, "/app/ChatGLM-Deepspeed-LoRA/output/0502/global_step-48818")
+model = PeftModel.from_pretrained(model, "/app/ChatGLM-Deepspeed-LoRA/output/0502-1/global_step-48818")
 model = model.half().cuda()
 model = model.eval()
 
