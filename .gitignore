@@ -1,7 +1,4 @@
 .idea*
 __pycache__
 *.out
-*.log
-*.*log*.*
 output_dir_lora
-output

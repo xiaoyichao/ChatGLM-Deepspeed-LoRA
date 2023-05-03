@@ -39,6 +39,7 @@ class SFTDataSet(Dataset):
                 labels = (
                     [pad_token_id4labels] * (len(prompt_ids) - 1) + input_ids[len(prompt_ids) - 1:]+[config.eos_token_id]
                 )
+                input_ids = input_ids + [config.eos_token_id]
                 # 这个位置的padding是padding 到最大长度
                 # pad_len = max_seq_length - len(input_ids)
                 # input_ids = input_ids + [tokenizer.pad_token_id] * pad_len

@@ -7,10 +7,11 @@ from peft import PeftModel
 # model = AutoModel.from_pretrained("THUDM/chatglm-6b", trust_remote_code=True).half().cuda()
 # model = model.eval()
 
+
 model = AutoModel.from_pretrained("/root/autodl-tmp/chatglm-6b", trust_remote_code=True, load_in_8bit=False)
 tokenizer = AutoTokenizer.from_pretrained("/root/autodl-tmp/chatglm-6b", trust_remote_code=True)
-model = PeftModel.from_pretrained(model, "/app/ChatGLM-Deepspeed-LoRA/output/0502-3/global_step-48818")
-model = model.half().cuda()
+model = PeftModel.from_pretrained(model, "/app/ChatGLM-Deepspeed-LoRA/output/0503-speed/global_step-24414")
+model = model.half().cuda(1)
 model = model.eval()
 
 """Override Chatbot.postprocess"""
