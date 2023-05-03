@@ -1,6 +1,10 @@
 ## 使用Deepspeed 在ChatGLM上基于LoRA方法的微调
 
 LoRA参数已经在项目的output/0503-speed/global_step-24414文件夹中共享。
+对比效果
+
+![image](https://github.com/xiaoyichao/ChatGLM-Deepspeed-LoRA/blob/master/images/%E5%AF%B9%E6%AF%94.png)
+
 
 生成requirements.txt
 
