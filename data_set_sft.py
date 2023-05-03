@@ -46,7 +46,7 @@ class SFTDataSet(Dataset):
                 # labels = labels + [pad_token_id4labels]
 
                 self.all_data.append(
-                    {"prompt": prompt, "target": target, "input_ids": input_ids, "labels": labels, "pad_token_id4input_ids":tokenizer.pad_token_id, "pad_token_id4labels":pad_token_id4labels})
+                    {"prompt": prompt, "target": target, "input_ids": input_ids, "labels": labels, "pad_token_id4input_ids":config.eos_token_id, "pad_token_id4labels":pad_token_id4labels})
                 
 
                         
