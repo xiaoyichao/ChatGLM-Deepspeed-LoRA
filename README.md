@@ -33,7 +33,9 @@ LoRA参数已经在项目的output/0503-speed/global_step-24414文件夹中共�
     nohup bash run_glm_6b_SFT.sh  > nohup.out 2>&1 &
 
 web_demo
-
+    修改./output/0504-speed/global_step-122070文件夹中adapter_config.json
+    参数 "inference_mode"为false
+    
     python web_demo_lora.py
 
 如何查看程序是否还在运行

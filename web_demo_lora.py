@@ -10,8 +10,8 @@ from peft import PeftModel
 
 model = AutoModel.from_pretrained("/root/autodl-tmp/chatglm-6b", trust_remote_code=True, load_in_8bit=False)
 tokenizer = AutoTokenizer.from_pretrained("/root/autodl-tmp/chatglm-6b", trust_remote_code=True)
-model = PeftModel.from_pretrained(model, "/app/ChatGLM-Deepspeed-LoRA/output/0503-speed/global_step-24414")
-model = model.half().cuda(1)
+model = PeftModel.from_pretrained(model, "/app/ChatGLM-Deepspeed-LoRA/output/0504-speed/global_step-122070")
+model = model.half().cuda(0)
 model = model.eval()
 
 """Override Chatbot.postprocess"""
@@ -106,4 +106,4 @@ with gr.Blocks() as demo:
 
     emptyBtn.click(reset_state, outputs=[chatbot, history], show_progress=True)
 
-demo.queue().launch(share=False, inbrowser=True)
+demo.queue().launch(server_name="0.0.0.0",share=False, inbrowser=True)
