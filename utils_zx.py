@@ -26,8 +26,8 @@ with open(txt_path,"r") as f:
                     print("请输入Answer，以 Ctrl-D 结束输入：")
                     Answer = sys.stdin.read()
                     if Instruction != Answer:
-                        check = input("确定要这个吗?:1或者0")
-                        if check =="1":
+                        check = input("确定要这个吗?1或者0:  ")
+                        if check !="0":
                             dict_data = {
                                     "instruction": Instruction,
                                     "input": "",
