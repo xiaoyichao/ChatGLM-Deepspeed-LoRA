@@ -1,5 +1,3 @@
 .idea*
 __pycache__
 *.out
-output_dir_lora
-output/0504-speed
